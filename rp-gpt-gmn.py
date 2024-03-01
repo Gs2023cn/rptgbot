@@ -18,10 +18,10 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(leve
 # 创建一个日志记录器
 logger = logging.getLogger()
 # Telegram Bot Token
-TOKEN = '7061360321:AAGIxtGGi2RCeXjSMifKHt71iGwkQ9Ek7Vk'
-
+#TOKEN = '7061360321:AAGIxtGGi2RCeXjSMifKHt71iGwkQ9Ek7Vk'
+TOKEN = '6241181708:AAEA9e0T8GNErPQYmStXQC0BeqQIDJ-xj2c'
 # Group administrator ID (replace with actual ID)
-ADMIN_ID = 6945651433
+ADMIN_ID = 1427519712
 
 # Define states for the conversation handler
 PASSWORD_INPUT = 1
@@ -42,6 +42,18 @@ def generate_redpacket_id():
 # Handle command "/setrp"
 async def set_redpacket(update, context):
     logger.debug('____SET_REDPACKET')
+
+    # Check if sender is a group administrator
+    if update.message.chat.type not in ['group', 'supergroup']:
+        await bot.send_message(chat_id = update.message.chat_id, message='请直接在群中发布红包！')
+        return ConversationHandler.END
+    chat_member = await update.message.chat.get_member(update.message.from_user.id)
+    if chat_member.status not in [ChatMember.ADMINISTRATOR, ChatMember.OWNER]:
+        print('____SET_REDPACKET+++++++++++++++chat member status', chat_member.status)
+        #update.message.reply_text('只有管理员可以发红包哦!')
+        #await bot.send_message(chat_id = update.message.chat_id, text='只有管理员可以发红包哦!')
+        return ConversationHandler.END
+    
     global current_redpacket
      # Parse command arguments
     args = context.args
@@ -70,15 +82,6 @@ async def set_redpacket(update, context):
     if current_redpacket:
         await update.message.reply_text('之前红包还没抢完，别急!')
         return
-    # Check if sender is a group administrator
-    if update.message.chat.type not in ['group', 'supergroup']:
-        bot.send_message(chat_id = update.message.chat_id, message='请直接在群中发布红包！')
-        return ConversationHandler.END
-#    chat_member = update.message.chat.get_member(update.message.from_user.id)
-#    if not chat_member.status == ChatMember.ADMINISTRATOR:
-        #update.message.reply_text('只有管理员可以发红包哦!')
-#        bot.send_message(chat_id = update.message.chat_id, message='只有管理员可以发红包哦!感谢热心参与!')
-#        return ConversationHandler.END
    
     # Extract password (if any)
     password = ' '.join(args[2:])
@@ -142,12 +145,12 @@ async def button_callback(update, context):
     user_id = user.id
     
     user_name = user.username or (user.first_name + ' ' + user.last_name)
-    chat_member = query.message.chat.get_member(user.id)
+    chat_member = await query.message.chat.get_member(user.id)
 
-#    #限制只有普通用户才能抢红包
-#    if not chat_member.status == ChatMember.MEMBER:
-#        query.message.reply_text('Only regular group members can participate in the red packet activity!')
-#        return
+    #限制只有普通用户才能抢红包
+    if not chat_member.status == ChatMember.MEMBER:
+        query.message.reply_text('Only regular group members can participate in the red packet activity!')
+        return
 
     # 检查当前用户是否已经参加过红包活动
     already_participated = any(participant['userid'] == user_id for participant in current_redpacket['participants'])
