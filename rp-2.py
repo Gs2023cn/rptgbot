@@ -635,8 +635,8 @@ async def button_click_callback(update: Update, context: CallbackContext):
                 current_users[user_id].balance = 0
                 current_users[user_id].add_record(Record(record_type = 0, record_id = withdraw_id, amount = mybalance, time = w_time, group_id = None, group_name = None))
                 user_name = current_users[user_id].user_name
-                await bot.send_message(chat_id=user_id, text=f"({user_name})您提现申请[ID-{withdraw_id}]已提交，提现金额{mybalance},{w_time}")
-                await bot.send_message(chat_id=ADMIN_ID, text=f"用户{user_name}({user_id})提现申请[ID-{withdraw_id}]已提交，提现金额{mybalance},{w_time}")
+                await bot.send_message(chat_id=user_id, text=f"({user_name})您提现申请[ID-{withdraw_id[:3]}...{withdraw_id[-3:]}]已提交，提现金额{mybalance},{w_time}")
+                await bot.send_message(chat_id=ADMIN_ID, text=f"[ID-{withdraw_id}]:用户{user_name}({user_id})申请往{current_users[user_id].address}提现，金额{mybalance}, 时间{w_time}")
             else:
                 await bot.send_message(chat_id=user_id, text=f"提现失败，请稍后重试")
             #await bot.send_message(chat_id=user_id, text="提现申请已提交")
